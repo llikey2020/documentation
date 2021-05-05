@@ -89,7 +89,7 @@ REST API url should be formatted like this:
 catalog\_service\_address/metastore/&lt;action&gt;/&lt;file
 type&gt;/&lt;service\_name&gt;/{parameters}
 
-**CREATE: **
+**CREATE:**
 
 A POST request will be performed. Since we have all table schema
 pre-defined, we will not support crcreate a new table from the REST API.
@@ -147,112 +147,107 @@ Currently using JSON as type of data that send over for REST API, BSON
 as the data send to the backend database, for reference, the
 microservice is using the following structure to process the data:
 
-<table>
-<tbody>
-<tr class="odd">
-<td><p>Go</p>
-<p>type ParquetMetadata struct {</p>
-<p>File string `json:"bile" bson:"bile"`</p>
-<p>Filesize int `json:"fileSize" bson:"fileSize"`</p>
-<p>Metadata []MetadataStruct `json:"metaData" bson:"metaData"`</p>
-<p>}</p>
-<p>type MetadataStruct struct {</p>
-<p>Subfile string `json:"subFile" bson:"subFile"`</p>
-<p>Filemetadata FilemetadataStruct `json:"fileMetaData" bson:"fileMetaData"`</p>
-<p>Blocks []BlocksStruct `json:"blocks" bson:"blocks"`</p>
-<p>}</p>
-<p>type FilemetadataStruct struct {</p>
-<p>Schema SchemaStruct `json:"schema" bson:"schema"`</p>
-<p>Keyvaluemetadata KeyvaluemetadataStruct `json:"keyValueMetaData" bson:"keyValueMetaData"`</p>
-<p>Createdby string `json:"createdBy" bson:"createdBy"`</p>
-<p>}</p>
-<p>type FieldsStruct struct {</p>
-<p>Name string `json:"name" bson:"name"`</p>
-<p>Repetition string `json:"repetition" bson:"repetition"`</p>
-<p>Originaltype string `json:"originalType" bson:"originalType"`</p>
-<p>ID string `json:"id" bson:"id"`</p>
-<p>Primitive bool `json:"primitive" bson:"primitive"`</p>
-<p>Primitivetypename string `json:"primitiveTypeName" bson:"primitiveTypeName"`</p>
-<p>Typelength int `json:"typeLength" bson:"typeLength"`</p>
-<p>Decimalmetadata string `json:"decimalMetadata" bson:"decimalMetadata"`</p>
-<p>}</p>
-<p>type ColumnsStruct struct {</p>
-<p>Path []string `json:"path" bson:"path"`</p>
-<p>Type string `json:"type" bson:"type"`</p>
-<p>Maxrepetitionlevel int `json:"maxRepetitionLevel" bson:"maxRepetitionLevel"`</p>
-<p>Maxdefinitionlevel int `json:"maxDefinitionLevel" bson:"maxDefinitionLevel"`</p>
-<p>Primitivetype PrimitivetypeStruct `json:"primitiveType" bson:"primitiveType"`</p>
-<p>Typelength int `json:"typeLength" bson:"typeLength"`</p>
-<p>}</p>
-<p>type PrimitivetypeStruct struct {</p>
-<p>Name string `json:"name" bson:"name"`</p>
-<p>Repetition string `json:"repetition" bson:"repetition"`</p>
-<p>Originaltype string `json:"originalType" bson:"originalType"`</p>
-<p>ID string `json:"id" bson:"id"`</p>
-<p>Primitive bool `json:"primitive" bson:"primitive"`</p>
-<p>Primitivetypename string `json:"primitiveTypeName" bson:"primitiveTypeName"`</p>
-<p>Typelength int `json:"typeLength" bson:"typeLength"`</p>
-<p>Decimalmetadata string `json:"decimalMetadata" bson:"decimalMetadata"`</p>
-<p>}</p>
-<p>type SchemaStruct struct {</p>
-<p>Name string `json:"name" bson:"name"`</p>
-<p>Repetition string `json:"repetition" bson:"repetition"`</p>
-<p>Originaltype string `json:"originalType" bson:"originalType"`</p>
-<p>ID string `json:"id" bson:"id"`</p>
-<p>Fields []FieldsStruct `json:"fields" bson:"fields"`</p>
-<p>Columns []ColumnsStruct `json:"columns" bson:"columns"`</p>
-<p>Paths [][]string `json:"paths" bson:"paths"`</p>
-<p>Primitive bool `json:"primitive" bson:"primitive"`</p>
-<p>Fieldcount int `json:"fieldCount" bson:"fieldCount"`</p>
-<p>}</p>
-<p>type KeyvaluemetadataStruct struct {</p>
-<p>OrgApacheSparkVersion string `json:"org.apachepache.spark.version" bson:"org.apachepache.spark.version"`</p>
-<p>OrgApacheSparkSQLParquetRowMetadata string `json:"org.apachepache.spark.sql.parquet.row.metadata" bson:"org.apachepache.spark.sql.parquet.row.metadata"`</p>
-<p>}</p>
-<p>type EncodingstatsStruct struct {</p>
-<p>Dictionaryencodings []string `json:"dictionaryEncodings" bson:"dictionaryEncodings"`</p>
-<p>Dataencodings []string `json:"dataEncodings" bson:"dataEncodings"`</p>
-<p>}</p>
-<p>type MinMaxBound struct {</p>
-<p>Bytes string `json:"bytes" bson:"bytes"`</p>
-<p>Bytesunsafe string `json:"bytesUnsafe" bson:"bytesUnsafe"`</p>
-<p>Backingbytesreused bool `json:"backingBytesReused" bson:"backingBytesReused"`</p>
-<p>}</p>
-<p>type StatisticsStruct struct {</p>
-<p>Max MinMaxBound `json:"max" bson:"max"`</p>
-<p>Min MinMaxBound `json:"min" bson:"min"`</p>
-<p>Minbytes string `json:"minBytes" bson:"minBytes"`</p>
-<p>Maxbytes string `json:"maxBytes" bson:"maxBytes"`</p>
-<p>Empty bool `json:"empty" bson:"empty"`</p>
-<p>Numnullsset bool `json:"numNullsSet" bson:"numNullsSet"`</p>
-<p>Numnulls int `json:"numNulls" bson:"numNulls"`</p>
-<p>}</p>
-<p>type ColumnsBlockStruct struct {</p>
-<p>Encodingstats EncodingstatsStruct `json:"encodingStats" bson:"encodingStats"`</p>
-<p>Dictionarypageoffset int `json:"dictionaryPageOffset" bson:"dictionaryPageOffset"`</p>
-<p>Valuecount int `json:"valueCount" bson:"valueCount"`</p>
-<p>Totalsize int `json:"totalSize" bson:"totalSize"`</p>
-<p>Totaluncompressedsize int `json:"totalUncompressedSize" bson:"totalUncompressedSize"`</p>
-<p>Statistics StatisticsStruct `json:"statistics" bson:"statistics"`</p>
-<p>Firstdatapageoffset int `json:"firstDataPageOffset" bson:"firstDataPageOffset"`</p>
-<p>Type string `json:"type" bson:"type"`</p>
-<p>Path []string `json:"path" bson:"path"`</p>
-<p>Codec string `json:"codec" bson:"codec"`</p>
-<p>Startingpos int `json:"startingPos" bson:"startingPos"`</p>
-<p>Encodings []string `json:"encodings" bson:"encodings"`</p>
-<p>Primitivetype PrimitivetypeStruct `json:"primitiveType" bson:"primitiveType"`</p>
-<p>}</p>
-<p>type BlocksStruct struct {</p>
-<p>Columns []ColumnsBlockStruct `json:"columns" bson:"columns"`</p>
-<p>Rowcount int `json:"rowCount" bson:"rowCount"`</p>
-<p>Totalbytesize int `json:"totalByteSize" bson:"totalByteSize"`</p>
-<p>Path string `json:"path" bson:"path"`</p>
-<p>Compressedsize int `json:"compressedSize" bson:"compressedSize"`</p>
-<p>Startingpos int `json:"startingPos" bson:"startingPos"`</p>
-<p>}</p></td>
-</tr>
-</tbody>
-</table>
+
+    type ParquetMetadata struct {
+        File     string         `json:"file" bson:"file"`
+        Filesize int            `json:"fileSize" bson:"fileSize"`
+        Metadata MetadataStruct `json:"metaData" bson:"metaData"`
+    }
+
+    type MetadataStruct struct {
+        Filemetadata FilemetadataStruct `json:"fileMetaData" bson:"fileMetaData"`
+        Blocks       []BlocksStruct     `json:"blocks" bson:"blocks"`
+    }
+    type FilemetadataStruct struct {
+        Schema           SchemaStruct           `json:"schema" bson:"schema"`
+        Keyvaluemetadata KeyvaluemetadataStruct `json:"keyValueMetaData" bson:"keyValueMetaData"`
+        Createdby        string                 `json:"createdBy" bson:"createdBy"`
+    }
+    type FieldsStruct struct {
+        Name              string `json:"name" bson:"name"`
+        Repetition        string `json:"repetition" bson:"repetition"`
+        Originaltype      string `json:"originalType" bson:"originalType"`
+        ID                string `json:"id" bson:"id"`
+        Primitive         bool   `json:"primitive" bson:"primitive"`
+        Primitivetypename string `json:"primitiveTypeName" bson:"primitiveTypeName"`
+        Typelength        int    `json:"typeLength" bson:"typeLength"`
+        Decimalmetadata   string `json:"decimalMetadata" bson:"decimalMetadata"`
+    }
+    type ColumnsStruct struct {
+        Path               []string            `json:"path" bson:"path"`
+        Type               string              `json:"type" bson:"type"`
+        Maxrepetitionlevel int                 `json:"maxRepetitionLevel" bson:"maxRepetitionLevel"`
+        Maxdefinitionlevel int                 `json:"maxDefinitionLevel" bson:"maxDefinitionLevel"`
+        Primitivetype      PrimitivetypeStruct `json:"primitiveType" bson:"primitiveType"`
+        Typelength         int                 `json:"typeLength" bson:"typeLength"`
+    }
+    type PrimitivetypeStruct struct {
+        Name              string `json:"name" bson:"name"`
+        Repetition        string `json:"repetition" bson:"repetition"`
+        Originaltype      string `json:"originalType" bson:"originalType"`
+        ID                string `json:"id" bson:"id"`
+        Primitive         bool   `json:"primitive" bson:"primitive"`
+        Primitivetypename string `json:"primitiveTypeName" bson:"primitiveTypeName"`
+        Typelength        int    `json:"typeLength" bson:"typeLength"`
+        Decimalmetadata   string `json:"decimalMetadata" bson:"decimalMetadata"`
+    }
+    type SchemaStruct struct {
+        Name         string          `json:"name" bson:"name"`
+        Repetition   string          `json:"repetition" bson:"repetition"`
+        Originaltype string          `json:"originalType" bson:"originalType"`
+        ID           string          `json:"id" bson:"id"`
+        Fields       []FieldsStruct  `json:"fields" bson:"fields"`
+        Columns      []ColumnsStruct `json:"columns" bson:"columns"`
+        Paths        [][]string      `json:"paths" bson:"paths"`
+        Primitive    bool            `json:"primitive" bson:"primitive"`
+        Fieldcount   int             `json:"fieldCount" bson:"fieldCount"`
+    }
+    type KeyvaluemetadataStruct struct {
+        OrgApacheSparkVersion               string `json:"org.apachepache.spark.version" bson:"org.apachepache.spark.version"`
+        OrgApacheSparkSQLParquetRowMetadata string `json:"org.apachepache.spark.sql.parquet.row.metadata" bson:"org.apachepache.spark.sql.parquet.row.metadata"`
+    }
+    type EncodingstatsStruct struct {
+        Dictionaryencodings []string `json:"dictionaryEncodings" bson:"dictionaryEncodings"`
+        Dataencodings       []string `json:"dataEncodings" bson:"dataEncodings"`
+    }
+    type MinMaxBound struct {
+        Bytes              string `json:"bytes" bson:"bytes"`
+        Bytesunsafe        string `json:"bytesUnsafe" bson:"bytesUnsafe"`
+        Backingbytesreused bool   `json:"backingBytesReused" bson:"backingBytesReused"`
+    }
+    type StatisticsStruct struct {
+        Max         MinMaxBound `json:"max" bson:"max"`
+        Min         MinMaxBound `json:"min" bson:"min"`
+        Minbytes    string      `json:"minBytes" bson:"minBytes"`
+        Maxbytes    string      `json:"maxBytes" bson:"maxBytes"`
+        Empty       bool        `json:"empty" bson:"empty"`
+        Numnullsset bool        `json:"numNullsSet" bson:"numNullsSet"`
+        Numnulls    int         `json:"numNulls" bson:"numNulls"`
+    }
+    type ColumnsBlockStruct struct {
+        Encodingstats         EncodingstatsStruct `json:"encodingStats" bson:"encodingStats"`
+        Dictionarypageoffset  int                 `json:"dictionaryPageOffset" bson:"dictionaryPageOffset"`
+        Valuecount            int                 `json:"valueCount" bson:"valueCount"`
+        Totalsize             int                 `json:"totalSize" bson:"totalSize"`
+        Totaluncompressedsize int                 `json:"totalUncompressedSize" bson:"totalUncompressedSize"`
+        Statistics            StatisticsStruct    `json:"statistics" bson:"statistics"`
+        Firstdatapageoffset   int                 `json:"firstDataPageOffset" bson:"firstDataPageOffset"`
+        Type                  string              `json:"type" bson:"type"`
+        Path                  []string            `json:"path" bson:"path"`
+        Codec                 string              `json:"codec" bson:"codec"`
+        Startingpos           int                 `json:"startingPos" bson:"startingPos"`
+        Encodings             []string            `json:"encodings" bson:"encodings"`
+        Primitivetype         PrimitivetypeStruct `json:"primitiveType" bson:"primitiveType"`
+    }
+    type BlocksStruct struct {
+        Columns        []ColumnsBlockStruct `json:"columns" bson:"columns"`
+        Rowcount       int                  `json:"rowCount" bson:"rowCount"`
+        Totalbytesize  int                  `json:"totalByteSize" bson:"totalByteSize"`
+        Path           string               `json:"path" bson:"path"`
+        Compressedsize int                  `json:"compressedSize" bson:"compressedSize"`
+        Startingpos    int                  `json:"startingPos" bson:"startingPos"`
+    }
+
 
 **Application detail:**
 

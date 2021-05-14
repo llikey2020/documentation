@@ -159,7 +159,20 @@ Support user configured file pruning
 
 e.g. sample user directory
 
-<img src="media/image7.png" alt="Generated" style="width:3.625in;height:3.07292in" />
+<img src="media/image7.png" alt="Generated" style="width:3.625in;height:3.07292in" />  
+
+**Current Stand-alone Spark Fault detection/tolerance (checksum files)**
+
+Spark does provide corruption detection on parquet data files.  
+After manually altering the parquet file, trying to read from the table returns a checksum error. Note that the exception is only raised when you try to actually try to use the data frame (for example doing a show() on the DF). Insert operations on the table however have no problem.
+![](media/image8.png)
+
+
+Spark does not seem to use the delta log checksum files currently to provide corruption detection.  
+After manually altering the delta log file, trying to use the time travel feature provided by Delta Lake, Spark will not report any signs of corruption. It just attempts to read the delta log. There will only be an error if I alter a part of the delta log that Spark actually uses. For example, changing a file path name in the delta log.
+
+![](media/image9.png)
+
 
 **主要操作流程(Main operation flow)**
 

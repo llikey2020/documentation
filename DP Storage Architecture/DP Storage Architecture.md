@@ -168,11 +168,80 @@ After manually altering the parquet file, trying to read from the table returns 
 ![](media/image8.png)
 
 
-Spark does not seem to use the delta log checksum files currently to provide corruption detection.  
+Delta Lake does not use the delta log checksum files currently to provide corruption detection.  
 After manually altering the delta log file, trying to use the time travel feature provided by Delta Lake, Spark will not report any signs of corruption. It just attempts to read the delta log. There will only be an error if I alter a part of the delta log that Spark actually uses. For example, changing a file path name in the delta log.
 
 ![](media/image9.png)
 
+**Spark and Delta Lake Fault detection/tolerance (checksum files)**
+
+**Step 1: Enable crc files for delta log and table data files**
+Delta lake already provides apis for writing checksum files in the Checksum.scala file (writeChecksumFile() method in RecordChecksum trait). 
+
+The writeChecksumFile() method takes in a Snapshot object which is described as:
+
+ * An immutable snapshot of the state of the log at some delta version. Internally
+
+ * this class manages the replay of actions stored in checkpoint or delta files.
+
+ * After resolving any new actions, it caches the result and collects the
+
+ * following basic information to the driver:
+
+ *  - Protocol Version
+
+ *  - Metadata
+
+ *  - Transaction state
+
+There are two places where delta logs are committed:
+
+OptimisticTransaction.scala (doCommit() method)
+
+New commits to the transaction log are handled here with optimistic concurrency control. After the log is written:
+
+deltaLog.store.write(
+
+      deltaFile(deltaLog.logPath, attemptVersion),
+
+      actions.map(_.json).toIterator)
+
+And an updated snapshot is retrieved:
+
+val postCommitSnapshot = deltaLog.update()
+
+A call to writeChecksumFile() is made by passing in postCommitSnapshot
+
+DeltaCommand.scala (commitLarge() method)
+
+This method is is typically used to create new tables (e.g. CONVERT TO DELTA) or 
+
+apply some commands which rarely receive other transactions (e.g. LONE/RESTORE).
+
+This commit to the transaction log does not use optimistic concurrency control. If it fails 
+
+to commit the specified version of the log, it will fail and not retry.
+
+After the log is written:
+
+deltaLog.store.write(deltaFile(deltaLog.logPath, attemptVersion), allActions.map(_.json))
+
+A checkpoint will be written:
+
+updateAndCheckpoint(spark, deltaLog, commitSize, attemptVersion)
+
+During this call an updated snapshot is retrieved:
+
+val currentSnapshot = deltaLog.update()
+
+A call to writeChecksumFile() is made by passing in currentSnapshot
+
+PR: https://gitlab.torlab/sequoiadp/delta/-/merge_requests/1
+
+
+**Step 2: When/how we use these CRCs to detect corruption**
+
+**Step 3: If we detect corruption, what do we do?**
 
 **主要操作流程(Main operation flow)**
 

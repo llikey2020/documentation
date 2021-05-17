@@ -176,11 +176,12 @@ After manually altering the delta log file, trying to use the time travel featur
 **Spark and Delta Lake Fault detection/tolerance (checksum files)**
 
 **Step 1: Enable crc files for delta log and table data files**
+
 Delta lake already provides apis for writing checksum files in the Checksum.scala file (writeChecksumFile() method in RecordChecksum trait). 
 
 The writeChecksumFile() method takes in a Snapshot object which is described as:
 
-'''
+```
 An immutable snapshot of the state of the log at some delta version. Internally
 this class manages the replay of actions stored in checkpoint or delta files.
 After resolving any new actions, it caches the result and collects the
@@ -188,7 +189,7 @@ following basic information to the driver:
  - Protocol Version
  - Metadata
  - Transaction state
-'''
+```
 
 There are two places where delta logs are committed:
 
@@ -209,6 +210,7 @@ val postCommitSnapshot = deltaLog.update()
 A call to writeChecksumFile() is made by passing in postCommitSnapshot
 
 2. DeltaCommand.scala (commitLarge() method)
+
 This method is is typically used to create new tables (e.g. CONVERT TO DELTA) or 
 apply some commands which rarely receive other transactions (e.g. LONE/RESTORE).
 

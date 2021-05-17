@@ -180,60 +180,53 @@ Delta lake already provides apis for writing checksum files in the Checksum.scal
 
 The writeChecksumFile() method takes in a Snapshot object which is described as:
 
- * An immutable snapshot of the state of the log at some delta version. Internally
-
- * this class manages the replay of actions stored in checkpoint or delta files.
-
- * After resolving any new actions, it caches the result and collects the
-
- * following basic information to the driver:
-
- *  - Protocol Version
-
- *  - Metadata
-
- *  - Transaction state
+'''
+An immutable snapshot of the state of the log at some delta version. Internally
+this class manages the replay of actions stored in checkpoint or delta files.
+After resolving any new actions, it caches the result and collects the
+following basic information to the driver:
+ - Protocol Version
+ - Metadata
+ - Transaction state
+'''
 
 There are two places where delta logs are committed:
 
-OptimisticTransaction.scala (doCommit() method)
+1. OptimisticTransaction.scala (doCommit() method)
 
 New commits to the transaction log are handled here with optimistic concurrency control. After the log is written:
-
+```scala
 deltaLog.store.write(
-
       deltaFile(deltaLog.logPath, attemptVersion),
-
       actions.map(_.json).toIterator)
+```
 
 And an updated snapshot is retrieved:
-
+```scala
 val postCommitSnapshot = deltaLog.update()
+```
 
 A call to writeChecksumFile() is made by passing in postCommitSnapshot
 
-DeltaCommand.scala (commitLarge() method)
-
+2. DeltaCommand.scala (commitLarge() method)
 This method is is typically used to create new tables (e.g. CONVERT TO DELTA) or 
-
 apply some commands which rarely receive other transactions (e.g. LONE/RESTORE).
 
 This commit to the transaction log does not use optimistic concurrency control. If it fails 
-
 to commit the specified version of the log, it will fail and not retry.
 
 After the log is written:
-
+```scala
 deltaLog.store.write(deltaFile(deltaLog.logPath, attemptVersion), allActions.map(_.json))
-
+```
 A checkpoint will be written:
-
+```scala
 updateAndCheckpoint(spark, deltaLog, commitSize, attemptVersion)
-
-During this call an updated snapshot is retrieved:
-
+```
+Inside this call an updated snapshot is retrieved:
+```scala
 val currentSnapshot = deltaLog.update()
-
+```
 A call to writeChecksumFile() is made by passing in currentSnapshot
 
 PR: https://gitlab.torlab/sequoiadp/delta/-/merge_requests/1

@@ -175,7 +175,7 @@ After manually altering the delta log file, trying to use the time travel featur
 
 **Spark and Delta Lake Fault detection/tolerance (checksum files)**
 
-**Step 1: Enable crc files for delta log and table data files**
+**Step 1: Generating crc files for delta logs**
 
 Delta lake already provides apis for writing checksum files in the Checksum.scala file (writeChecksumFile() method in RecordChecksum trait). 
 
@@ -190,6 +190,24 @@ following basic information to the driver:
  - Metadata
  - Transaction state
 ```
+
+However, the outputted crc file is not a usual crc file. It is more like a summary of the table at the current version.
+
+For e.g. This is the content of a delta lake crc file:
+```
+{"tableSizeBytes":2832,"numFiles":7,"numMetadata":1,"numProtocol":1,"numTransactions":0}
+```
+
+This is not enough to provide the delta log validation that we desire. We will add another value to this crc file object which will be a checksum hash value that will enable us to perform the delta log validation whenever we read a delta log.
+
+For e.g. The content of the new delta lake crc file would look something like this:
+```
+{"tableSizeBytes":2832,"numFiles":7,"numMetadata":1,"numProtocol":1,"numTransactions":0, “checksum”:crc^@^@^@^B^@^AR<99>k}
+```
+
+We also want to contain the generation and usage of the crc files inside the code paths that write and read the delta logs. (deltaLog.store.write() and deltaLog.store.read())  
+This way, performing a write and read will perform all of the crc operations aswell.
+
 
 There are two places where delta logs are committed:
 

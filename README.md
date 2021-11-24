@@ -14,6 +14,7 @@ flowchart LR
     history(History server)
     batch(Batch job manager)
     schema(Schema)
+    rbac(RBAC)
     db>MySQL endpoint]
 
     %% Jobs
@@ -23,9 +24,9 @@ flowchart LR
     frontend --> zeppelin & history & batch
     frontend --> |File upload| alluxio
     zeppelin & batch --> spark
-    spark --> alluxio & metadata & schema
+    spark --> alluxio & metadata & schema & rbac
     history --> alluxio
-    metadata & schema --> db
+    metadata & schema & rbac --> db
   end
 
   db --> rds
